@@ -1,0 +1,14 @@
+# Node
+*.lock
+*.log
+out/
+node_modules/
+
+# Application
+*.zip
+
+# MacOS
+.DS_Store
+
+# Visual Studio Code
+.vscode/
