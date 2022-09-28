@@ -43,7 +43,7 @@ export function runCLI(argv: string[]): Promise<Command> {
     .parseAsync(argv);
 }
 
-function initiatePrompts(
+async function initiatePrompts(
   metadata: InitializrMetadata
 ): Promise<InitializrParameters> {
   const questions: PromptObject<string>[] = [];
@@ -115,11 +115,23 @@ function initiatePrompts(
     )
   );
 
-  return prompts(questions, {
+  const parameters = await prompts(questions, {
     onCancel: () => {
       throw new Error("Cancelled");
     },
   });
+
+  const confirmResponse = await prompts({
+    type: "confirm",
+    name: "confirm",
+    message: "Generate project?",
+  });
+
+  if (!confirmResponse.confirm) {
+    throw new Error("Cancelled");
+  }
+
+  return parameters;
 }
 
 function createMultiSelectPrompt(
