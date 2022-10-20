@@ -100,8 +100,8 @@ export async function generateInitializrProject(
   const zip: AdmZip = new AdmZip(await response.buffer());
 
   if (zipped) {
-    zip.writeZip(parameters.artifactId + ".zip");
+    zip.writeZip(parameters.name + ".zip");
   } else {
-    zip.extractAllTo(parameters.artifactId as string, true, true);
+    zip.extractAllTo(parameters.name as string, true, true);
   }
 }
