@@ -1,7 +1,5 @@
 # Node
-yarn.lock
 *.log
-package-lock.json
 out/
 node_modules/
 
