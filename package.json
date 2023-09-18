@@ -1,5 +1,5 @@
 {
-  "name": "initializr-cli",
+  "name": "spring-initializr-cli",
   "version": "1.0.0",
   "author": "Kevin Lee <klee03509@gmail.com>",
   "description": "A CLI for creating Spring projects locally, using Spring Initializr.",
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "format": "prettier -w './(bin|src)/**/*'"
+    "format": "prettier -w 'package.json' 'tsconfig.json' './(bin|src)/**/*'"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.0",
