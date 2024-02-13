@@ -1,9 +1,5 @@
-# Node
-*.log
-out/
-node_modules/
-
-# Application
+# Build
+bin/
 *.zip
 
 # MacOS
