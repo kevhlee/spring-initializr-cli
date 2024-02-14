@@ -24,6 +24,7 @@ func run() error {
 	}
 
 	opts := initializr.NewDefaultOptions(metadata)
+
 	form := huh.NewForm(
 		huh.NewGroup(
 			newSelectPrompt(metadata.Type, "Project:", &opts.Type),
@@ -51,6 +52,8 @@ func run() error {
 			),
 		),
 	)
+
+	form = form.WithTheme(huh.ThemeBase16())
 
 	if err := form.Run(); err != nil {
 		if err == huh.ErrUserAborted {
