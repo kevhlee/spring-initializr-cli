@@ -1,4 +1,4 @@
-SOURCES := $(wildcard *.go)
+SOURCES := $(wildcard **/*.go)
 
 bin/sprout: $(SOURCES)
 	@ go build -o bin/sprout .
