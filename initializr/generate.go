@@ -58,6 +58,9 @@ func GenerateProject(rawURL string, opts Options) error {
 	}
 
 	basePath := opts.Name
+	if err := os.Mkdir(basePath, 0777); err != nil {
+		return err
+	}
 
 	for _, f := range zr.File {
 		filename := path.Join(basePath, f.Name)
