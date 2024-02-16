@@ -17,58 +17,6 @@ func main() {
 	}
 }
 
-func run() error {
-	metadata, err := initializr.FetchMetadata(initializr.DefaultUrl)
-	if err != nil {
-		return err
-	}
-
-	opts := initializr.NewDefaultOptions(metadata)
-
-	form := huh.NewForm(
-		huh.NewGroup(
-			newSelectPrompt(metadata.Type, "Project:", &opts.Type),
-			newSelectPrompt(metadata.Language, "Language:", &opts.Language),
-			newSelectPrompt(metadata.BootVersion, "Spring Boot:", &opts.BootVersion),
-		),
-		huh.NewGroup(
-			newInputPrompt(metadata.GroupId, "Group:", &opts.GroupId),
-			newInputPrompt(metadata.ArtifactId, "Artifact:", &opts.ArtifactId),
-			newInputPrompt(metadata.Name, "Name:", &opts.Name),
-			newInputPrompt(metadata.Version, "Version:", &opts.Version),
-			newInputPrompt(metadata.Description, "Description:", &opts.Description),
-			newInputPrompt(metadata.PackageName, "Package name:", &opts.PackageName),
-			newSelectPrompt(metadata.Packaging, "Packaging:", &opts.Packaging),
-			newSelectPrompt(metadata.JavaVersion, "Java:", &opts.JavaVersion),
-		),
-		huh.NewGroup(
-			newMultiSelectPrompt(
-				metadata.Dependencies,
-				"Dependencies:",
-				&opts.Dependencies,
-				func(value initializr.MetadataValue) bool {
-					return WithinRange(opts.BootVersion, value.VersionRange)
-				},
-			),
-		),
-	)
-
-	form = form.WithTheme(huh.ThemeBase16())
-
-	if err := form.Run(); err != nil {
-		if err == huh.ErrUserAborted {
-			return nil
-		}
-		return err
-	}
-
-	err = initializr.GenerateProject(initializr.DefaultUrl, opts)
-	if err == nil {
-		fmt.Printf("Spring project '%s' created. 🌱\n", opts.Name)
-	}
-	return err
-}
-
 func newInputPrompt(element initializr.MetadataText, title string, value *string) *huh.Input {
 	return huh.NewInput().
 		Title(title).
@@ -107,4 +55,68 @@ func newSelectPrompt(element initializr.MetadataSelect, title string, value *str
 		Title(title).
 		Options(options...).
 		Value(value)
+}
+
+func run() error {
+	metadata, err := initializr.FetchMetadata(initializr.DefaultUrl)
+	if err != nil {
+		return err
+	}
+
+	opts := initializr.NewDefaultOptions(metadata)
+
+	form1 := huh.NewForm(
+		huh.NewGroup(
+			newSelectPrompt(metadata.Type, "Project:", &opts.Type),
+			newSelectPrompt(metadata.Language, "Language:", &opts.Language),
+			newSelectPrompt(metadata.BootVersion, "Spring Boot:", &opts.BootVersion),
+		),
+		huh.NewGroup(
+			newInputPrompt(metadata.GroupId, "Group:", &opts.GroupId),
+			newInputPrompt(metadata.ArtifactId, "Artifact:", &opts.ArtifactId),
+			newInputPrompt(metadata.Name, "Name:", &opts.Name),
+			newInputPrompt(metadata.Version, "Version:", &opts.Version),
+			newInputPrompt(metadata.Description, "Description:", &opts.Description),
+			newInputPrompt(metadata.PackageName, "Package name:", &opts.PackageName),
+			newSelectPrompt(metadata.Packaging, "Packaging:", &opts.Packaging),
+			newSelectPrompt(metadata.JavaVersion, "Java:", &opts.JavaVersion),
+		),
+	).WithTheme(huh.ThemeBase16())
+
+	if err := form1.Run(); err != nil {
+		return err
+	}
+
+	form2 := huh.NewForm(
+		huh.NewGroup(
+			newMultiSelectPrompt(
+				metadata.Dependencies,
+				"Dependencies:",
+				&opts.Dependencies,
+				func(value initializr.MetadataValue) bool {
+					return WithinRange(opts.BootVersion, value.VersionRange)
+				},
+			),
+		),
+	).WithTheme(huh.ThemeBase16())
+
+	if err := form2.Run(); err != nil {
+		return err
+	}
+
+	err = initializr.GenerateProject(initializr.DefaultUrl, opts)
+	if err == nil {
+		fmt.Printf("Spring project '%s' created. 🌱\n", opts.Name)
+	}
+	return err
+}
+
+func runForm(form *huh.Form) error {
+	err := form.Run()
+	if err != nil {
+		if err == huh.ErrUserAborted {
+			os.Exit(0)
+		}
+	}
+	return err
 }
