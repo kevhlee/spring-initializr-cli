@@ -7,13 +7,11 @@ import (
 )
 
 // FetchMetadata fetches JSON metadata containing settings that can be used to
-// generate a project from a Spring Initializr API instance.
+// generate a project from the Spring Initializr API.
 //
 // For reference: https://docs.spring.io/initializr/docs/current/reference/html/#api-guide
-func FetchMetadata(rawURL string) (Metadata, error) {
-	var metadata Metadata
-
-	req, err := http.NewRequest(http.MethodGet, rawURL, nil)
+func FetchMetadata() (metadata Metadata, err error) {
+	req, err := http.NewRequest(http.MethodGet, DefaultUrl, nil)
 	if err != nil {
 		return metadata, err
 	}
@@ -36,7 +34,7 @@ func FetchMetadata(rawURL string) (Metadata, error) {
 }
 
 // Metadata is JSON metadata containing settings that can be used to create a
-// new project from a Spring Initializr API instance.
+// new project from the Spring Initializr API.
 type Metadata struct {
 	ArtifactId   MetadataText        `json:"artifactId"`
 	BootVersion  MetadataSelect      `json:"bootVersion"`
@@ -80,12 +78,4 @@ type MetadataValue struct {
 	Id           string `json:"id"`
 	Name         string `json:"name"`
 	VersionRange string `json:"versionRange"`
-}
-
-func (v MetadataValue) HasDescription() bool {
-	return len(v.Description) != 0
-}
-
-func (v MetadataValue) HasVersionRange() bool {
-	return len(v.VersionRange) != 0
 }

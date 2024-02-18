@@ -64,7 +64,11 @@ func ParseQualifier(version string) string {
 	return "RELEASE"
 }
 
-func WithinRange(version, versionRange string) bool {
+func WithinVersionRange(version, versionRange string) bool {
+	if len(versionRange) == 0 {
+		return true
+	}
+
 	match := patternVersionRange.FindStringSubmatch(versionRange)
 	if len(match) == 0 {
 		return false

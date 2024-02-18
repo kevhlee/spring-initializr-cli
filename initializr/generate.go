@@ -3,6 +3,8 @@ package initializr
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -13,26 +15,26 @@ import (
 
 // GenerateProject sends a request to a Spring Initializr instance to create
 // a project based on specified options.
-func GenerateProject(rawURL string, opts Options) error {
-	u, err := url.Parse(rawURL)
+func GenerateProject(options Options) error {
+	u, err := url.Parse(DefaultUrl)
 	if err != nil {
 		return err
 	}
 	u = u.JoinPath("starter.zip")
 
 	values := u.Query()
-	values.Set("artifactId", opts.ArtifactId)
-	values.Set("bootVersion", opts.BootVersion)
-	values.Set("description", opts.Description)
-	values.Add("dependencies", strings.Join(opts.Dependencies, ","))
-	values.Set("groupId", opts.GroupId)
-	values.Set("javaVersion", opts.JavaVersion)
-	values.Set("language", opts.Language)
-	values.Set("packageName", opts.PackageName)
-	values.Set("packaging", opts.Packaging)
-	values.Set("name", opts.Name)
-	values.Set("type", opts.Type)
-	values.Set("version", opts.Version)
+	values.Set("artifactId", options.ArtifactId)
+	values.Set("bootVersion", options.BootVersion)
+	values.Set("description", options.Description)
+	values.Add("dependencies", strings.Join(options.Dependencies, ","))
+	values.Set("groupId", options.GroupId)
+	values.Set("javaVersion", options.JavaVersion)
+	values.Set("language", options.Language)
+	values.Set("packageName", options.PackageName)
+	values.Set("packaging", options.Packaging)
+	values.Set("name", options.Name)
+	values.Set("type", options.Type)
+	values.Set("version", options.Version)
 
 	u.RawQuery = values.Encode()
 
@@ -57,8 +59,12 @@ func GenerateProject(rawURL string, opts Options) error {
 		return err
 	}
 
-	basePath := opts.Name
-	if err := os.Mkdir(basePath, 0777); err != nil {
+	basePath := options.Name
+	if _, err := os.Stat(basePath); !os.IsNotExist(err) {
+		return fmt.Errorf("Directory '%s' already exists", basePath)
+	}
+
+	if err := os.MkdirAll(basePath, 0777); err != nil {
 		return err
 	}
 
@@ -91,18 +97,18 @@ func GenerateProject(rawURL string, opts Options) error {
 
 // Options represents options for Spring Initializr project creation.
 type Options struct {
-	ArtifactId   string
-	BootVersion  string
-	Dependencies []string
-	Description  string
-	GroupId      string
-	JavaVersion  string
-	Language     string
-	Name         string
-	PackageName  string
-	Packaging    string
-	Type         string
-	Version      string
+	ArtifactId   string   `json:"artifactId"`
+	BootVersion  string   `json:"bootVersion"`
+	Dependencies []string `json:"dependencies"`
+	Description  string   `json:"description"`
+	GroupId      string   `json:"groupId"`
+	JavaVersion  string   `json:"javaVersion"`
+	Language     string   `json:"language"`
+	Name         string   `json:"name"`
+	PackageName  string   `json:"packageName"`
+	Packaging    string   `json:"packaging"`
+	Type         string   `json:"type"`
+	Version      string   `json:"version"`
 }
 
 // NewDefaultOptions creates options based on Spring Initializr metadata.
@@ -120,4 +126,17 @@ func NewDefaultOptions(metadata Metadata) Options {
 		Type:        metadata.Type.Default,
 		Version:     metadata.Version.Default,
 	}
+}
+
+// ParseOptions parses options from a JSON file.
+func ParseOptions(filename string) (options Options, err error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return options, err
+	}
+
+	if err := json.Unmarshal(data, &options); err != nil {
+		return options, err
+	}
+	return options, nil
 }
